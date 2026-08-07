@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navLinks } from "@/components/nav";
-import { Instagram, Mail, TikTok, Youtube } from "@/components/icons";
+import { Instagram, Mail, Menu, TikTok, X, Youtube } from "@/components/icons";
 
 const socials = [
   { Icon: Youtube, label: "YouTube" },
@@ -23,6 +24,7 @@ export default function SiteHeader({
 }) {
   const pathname = usePathname();
   const transparent = variant === "transparent";
+  const [open, setOpen] = useState(false);
 
   const nav = (
     <nav
@@ -66,15 +68,64 @@ export default function SiteHeader({
             <Icon className="h-5 w-5" />
           </a>
         ))}
+        <button
+          type="button"
+          className="md:hidden"
+          aria-label={open ? "Close menu" : "Open menu"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+        >
+          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        </button>
       </div>
     </nav>
   );
 
-  if (transparent) return nav;
+  const mobileMenu = open ? (
+    <div
+      className={`md:hidden ${
+        transparent
+          ? "absolute inset-x-0 top-full z-20 border-b border-white/20 bg-black/80 text-white backdrop-blur"
+          : "border-b border-line bg-background"
+      }`}
+    >
+      <ul className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4 text-sm">
+        {navLinks.map((l) => {
+          const active = isActive(pathname, l.href);
+          return (
+            <li key={l.href}>
+              <Link
+                href={l.href}
+                onClick={() => setOpen(false)}
+                className={`block py-2 transition-opacity ${
+                  active
+                    ? transparent
+                      ? "opacity-100 underline underline-offset-8"
+                      : "text-forest"
+                    : "opacity-90"
+                }`}
+              >
+                {l.label}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  ) : null;
+
+  if (transparent)
+    return (
+      <div className="relative">
+        {nav}
+        {mobileMenu}
+      </div>
+    );
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-background/90 backdrop-blur">
       {nav}
+      {mobileMenu}
     </header>
   );
 }
